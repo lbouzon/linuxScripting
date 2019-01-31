@@ -1,13 +1,12 @@
 #!/bin/ksh
-typeset -i Y=1
-typeset -i element=("$@")
-typeset -i MAX=${element[1]}
-typeset -i length=`expr length $@[1]`
+let Y=1
+set -A element "$@"
+let MAX=${element[0]}
+let length=`expr length $MAX`
 
-
- 	 while (( $Y < $MAX)); do
-		nombre=`printf "arch-%0${length}d.txt" $Y` 
-			echo "$i" > "$nombre"
-        Y+=1
-	done
+while [[ $Y -le $MAX ]]; do
+    nombre=`printf "arch-%0${length}d.txt" $Y` 
+    echo "$Y" > "$nombre"
+    let ++Y
+done
 
