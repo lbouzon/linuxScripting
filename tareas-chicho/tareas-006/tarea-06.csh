@@ -1,4 +1,17 @@
 #!/bin/csh -f
+
+if ( 1 != $#argv )then
+   echo "Ony 1 argument is accepted"
+   exit 1
+endif
+
+set test = `echo $1 | grep '^[0-9]*$'`
+echo $test
+if ($test) then
+    echo "Argument is not a number"
+    exit 1
+endif 
+
 set nuevaLista = (`ls -r *[0-9]*.txt`)
 set rv = 0
 foreach line ($nuevaLista)
