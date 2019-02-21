@@ -28,11 +28,13 @@ oldList=($(cat old.list | tr -s ' ' | cut -f 9 -d ' ' | sort))
 newList=($(cat new.list | tr -s ' ' | cut -f 9 -d ' ' | sort))
 
 
-oldLength='${#oldList[@]}'
-newLength='${#newLiest[@]}'
+oldLength=`echo ${#oldList[@]}`
+newLength=`echo ${#newList[@]}`
 
+echo $oldLength
+echo $newLength
 
-while read line;do 
+while [[ $i -lt $oldLength  &&   $j -lt $newLength    ]]  ;do 
 	echo "Nuevo ${newList[i]} || Viejo ${oldList[j]}"
 	
 	if [[  ${newList[i]} > ${oldList[j]} ]] ;then
