@@ -1,0 +1,7 @@
+-rwxrwxr-x 1 lbouzon users 344 Feb 21 15:58 ChangeControler.ksh
+-rwxrwxr-x 1 lbouzon users 769 Feb 21 10:36 directoryListChecker.ksh
+-rw-r--r-- 1 lbouzon users   8 Feb 21 12:38 nuevalista.contenido
+-rw-r--r-- 1 lbouzon users   0 Feb 21 16:11 nuevo.list
+-rwxrwxr-x 1 lbouzon users 128 Feb 19 17:44 tablecheck2.ksh
+-rw-r--r-- 1 lbouzon users   6 Feb 21 12:37 viejalista.contenido
+-rwxrwxr-x 1 lbouzon users 964 Feb 21 11:23 watchdog.ksh
