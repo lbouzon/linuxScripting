@@ -37,14 +37,6 @@ IFS=$'\n'
 newFile=(`ls -l -I old.list | tail -n +2`)
 
 
-
-echo "NEW LIST  ${#newList[@]}"
-echo "OLD LIST  ${#oldList[@]}"
-echo "NEW FILE  ${#newFile[@]}"
-
-
-
-
 #while IFS= $'\n'  read -r line || [[ "$line" ]] ; do
 #newFile+=("$line")
 #done < `(ls -l -I old.list | tail -n +2)`
@@ -58,10 +50,6 @@ while IFS= read -r line || [[ "$line" ]] ; do
 oldFile+=("$line")
 done < old.list
 oldFile=("${oldFile[@]:1}")
-
-
-echo "OLD FILE ${#oldFile[@]}"
-
 
 
 
