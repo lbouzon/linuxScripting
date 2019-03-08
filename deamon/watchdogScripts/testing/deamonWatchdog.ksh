@@ -27,7 +27,7 @@ waitTime=0
 #echo $((($(date +%s%N) - 1552072477431414701 )/1000000))
 :
 
-alias minuteCmd='nohup sh minutetrackerD.sh & >minute.salida 2>minute.salida'
+alias minuteCmd='(nohup sh minutetrackerD.sh  >minute.salida 2>minute.salida) & > /dev/null'
 
 while true
 do
@@ -49,7 +49,9 @@ do
 	elif [ ${#deamonPidList[@]} -gt 1 ]; then
             echo "uh, hay banda"
  	    for pid in $deamonPidList;do
-		kill -9 $pid
+
+
+		kill -15 $pid
             done
         minuteCmd
 	fi   
