@@ -1,34 +1,41 @@
 #!/bin/ksh
 
-#directorio=$1
-#ls -l $directorio > $directorio.contenido 
-#insert_time=`date`
+####################################################################
+#Author: Lisandro Bouzon 
+#Description:  
+#             command          arg1       arg 
+#            ./ChangeControler directorio file
+#
+#El script recibe 2 argumentos, "directorio" que es el directorio donde realizara el chequeo de los datos y 
+#			        "file" donde tiene el estado anterior del directorio
 
-#waitTime=0
-#while true
-#usleep $waitTime
-# start=$SECONDS
+#  Salida:          muestra el resultado de los cambios que hubo en una lista       
 
-#nuevoContenido=`(ls -l $directorio)`
+###############################################
 
 
+if [${#} -eq 0 ]; then
+   echo "Change controler tiene 2 argumentos: directorio a chequear y file del stado anterior "
+   echo "uso : ./ChangeControler directorio file"
 
-#	psql -c "insert into changes ( directory , check_at    , description ,username) values
-#	 				('$directorio','$insert_time','$file','lbouzon')" 
-#	-d shelltest001 -U shell
+   exit: 0
+fi
 
-#while read line
-#do
-#echo “$line”
-#done << iplist 
-   
+if [ -d $1 ] && [  -f $2 ];then
+    echo "Procesing $1 $2"
+else
+    echo "Invalid arguments. ${1} is not a directory or ${2} is not a file "
+    exit 1
+fi
+exit 0
+
+directorio=$1
 
 i=0
 j=0
 
 oldList=($(cat old.list | tr -s ' ' | cut -f 9 -d ' ' ))
-newList=($(ls -l -I old.list | tail -n +2 | tr -s ' ' | cut -f 9 -d ' ' ))
-
+newList=($(ls -l $directorio | tail -n +2 | tr -s ' ' | cut -f 9 -d ' ' ))
 
 oldLength=`echo ${#oldList[@]}`
 newLength=`echo ${#newList[@]}`
@@ -36,38 +43,13 @@ newLength=`echo ${#newList[@]}`
 IFS=$'\n'
 newFile=(`ls -l -I old.list | tail -n +2`)
 
-
-
-echo "NEW LIST  ${#newList[@]}"
-echo "OLD LIST  ${#oldList[@]}"
-echo "NEW FILE  ${#newFile[@]}"
-
-
-
-
-#while IFS= $'\n'  read -r line || [[ "$line" ]] ; do
-#newFile+=("$line")
-#done < `(ls -l -I old.list | tail -n +2)`
-#newFile=("${newFile[@]:1}")
-
-#echo "el nuevo files es ${newFile[4]}"
-
-
 oldFile=()
 while IFS= read -r line || [[ "$line" ]] ; do
 oldFile+=("$line")
 done < old.list
 oldFile=("${oldFile[@]:1}")
 
-
-echo "OLD FILE ${#oldFile[@]}"
-
-
-
-
-
 while [[ $j -lt $oldLength  &&   $i -lt $newLength    ]]  ;do 
-	echo "Nuevo ${newList[i]} || Viejo ${oldList[j]}"
 
 	if [[  ${newList[i]} > ${oldList[j]} ]] ;then
 
@@ -77,23 +59,13 @@ while [[ $j -lt $oldLength  &&   $i -lt $newLength    ]]  ;do
 	elif  [[  ${newList[i]} < ${oldList[j]} ]];then
 	    echo "Agregado file: ${newList[i]}" 
 	    let i++
-	
 
 	else
-	#if [[   ${newList[i]} =  ${oldList[j]}     ]] 
-		
-               if [[ "${newFile[i]}" != "${oldFile[j]}" ]] ; then
-         
-
-                     echo "File updated: ${newFile[i]}"
-	            # echo "Mismo file: con datos diferentes"
-                    # echo "           El nuevo es ${newFile[i]}" 
-                    # echo "           El viejo es ${oldFile[j]}" 
-	       fi		
+            if [[ "${newFile[i]}" != "${oldFile[j]}" ]] ; then
+                echo "File updated: ${newFile[i]}"
+	    fi		
         let j++
         let i++
-	     
-  	    	
 	fi
 
 done < old.list
@@ -102,14 +74,14 @@ done < old.list
 let nl=$newLength-1
 let ol=$oldLength-1
 
-
-if  [[ $j -eq $oldLength ]] ; then
+if  [[ $j -eq $oldLength && $i -lt $newLength ]] ; then
     for a in {$i..$nl}; do 
         echo "New File: ${newList[$a]}"
     done
 
 fi
-if  [[ $i -eq $newLength ]] ;then 
+
+if  [[ $i -eq $newLength && $j -lt $oldLength ]] ;then 
    for b in {$j..$ol}; do 
         echo "File Deleted: ${newList[$b]}"
     done

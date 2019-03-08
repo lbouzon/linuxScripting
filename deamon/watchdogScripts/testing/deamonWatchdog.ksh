@@ -9,8 +9,7 @@
 # Feb 19, 2019
 ###################################################
  
-
-set porcentageOfTimeRunnuing = 0.005
+porcentageOfTime=0.5
 
 # Se fija si ya fue inicializado para no correr en paralelo. 
 result=`ps aux | grep "watchdog.sh" | grep -v "grep" | wc -l`
@@ -28,26 +27,42 @@ waitTime=0
 #echo $((($(date +%s%N) - 1552072477431414701 )/1000000))
 :
 
+alias minuteCmd='nohup sh minutetrackerD.sh & >minute.salida 2>minute.salida'
+
 while true
 do
+    echo "vamos a esperar $waitTime"
     sleep $waitTime
     start=$SECONDS
     sleep 5
+   
+    deamonRunning=`ps aux | grep "minutetrackerD.sh" | grep -v "grep" | wc -l`
+    deamonPidList=(`pgrep -f minutetrackerD.sh`)
+    
+	echo "la cantidad de pids de minutracker es ${#deamonPidList[@]}"
+
+	if   [[ -z "${deamonPidList}" ]]; then
+	echo "no habia ninguno"
+	minuteCmd
+	
+
+	elif [ ${#deamonPidList[@]} -gt 1 ]; then
+            echo "uh, hay banda"
+ 	    for pid in $deamonPidList;do
+		kill -9 $pid
+            done
+        minuteCmd
+	fi   
+
  
-#Obtengo la lista de directorios
-    directories_to_check=(`psql -c "select directory from directories where username='lbouzon'and enabled=true" -d shelltest001 -U shell  | tail -n +3 | head -n -2`)
-    qttyDirectories=${#directories_to_check[@]}
-
-
-    for directory in $(directories_to_check); do
-         nohup sh ./deamonDirectory.ksh $directory > salid$!.out 2 > salid$!.out
-         echo $directory $! > deamon.list
-    done
-
     end=$SECONDS
-    elapsed=$((end - start))
-    let waitTime=$elapsed/$porcentageofRunning
+    elapsed=$(($end - $start))
+
+	echo "elapsed : $elapsed"
+	echo "el porcentaje es $porcentageOfTime"	
+    let waitTime=$(($elapsed/$porcentageOfTime))
 done
 
 #kill the pid that saved when launching. ;
 kill -9 `cat save_pid.tx
+
