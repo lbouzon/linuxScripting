@@ -59,26 +59,19 @@ do
     start=$SECONDS
   #                                         #
    
-    set -A dirsToKill
     set -A dirsToRun
     set -A dirsToLeave
     set -A pidsToKill
 
     directories_to_check=(`psql -q -A -t -c "select directory from directories where username='lbouzon'and enabled=true" -d shelltest001 -U shell | sort`)
 
-   # echo "1)"
-   # echo "Los directorios a verificar son ${directories_to_check[@]}"
-
-              
 
     if [ -f "$daemonSonPids" ]; then
 
 
-#        echo "El file $daemonSonPids existe y tiene esto:"
 
         cat "${daemonSonPids}" 
         
-#        echo "-___________________fin____________________-"
             
         runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
         runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
@@ -90,74 +83,58 @@ do
         maxj=${#runningList[@]}   
       
 
-        #aca empieza el error
 
         while [[ $j < $maxj  &&   $i < $maxi   ]]  ;do
 
-#        echo "el valor de to Check: ${directories_to_check[i]} and to run:  ${runningList[j]}"
 
 
-            if [[ ${directories_to_check[i]} > ${runningList[j]} ]] ;then
+            if [[ ${directories_to_check[$i]} > ${runningList[$j]} ]] ;then
             
-                dirsToKill+=("${runningList[j]}")
-                pidsToKill+=("${runningPids[j]}")
-            
-#                echo "directorio to Kill ${dirsToKill[j]}"
-#                echo "pid to Kill ${pidsToKill[j]}"
+                pidsToKill+=("${runningPids[$j]}")
             
                 let j++
             
-            elif  [[  ${directories_to_check[i]} < ${runningList[j]} ]];then
+            elif  [[  ${directories_to_check[$i]} < ${runningList[$j]} ]];then
                     
-                dirsToRun+=("${directories_to_check[i]}")
-#               echo "dirs to run ${dirsToRun[j]}"
-            
-            elif   [[  ${directories_to_check[i]} = ${runningList[j]} ]];then
-#                echo  "Esté ya está corriendo  ${directories_to_check[i]}"
+                dirsToRun+=("${directories_to_check[$i]}")
+
+                let i++
+
+            elif   [[  ${directories_to_check[$i]} = ${runningList[$j]} ]];then
               
                 let i++
                 let j++
 
                 sed -n "${j}p" "$daemonSonPids" >> "$daemonSonPidsTmp"
-            
+                
             fi
             
        done
     rm $daemonSonPids
 
-  #else 
-     #echo "El File $daemonSonPids no existe. Se corren todos entonces"  
-     #dirsToRun=("${directories_to_check[@]}")
-  #fi
 
        let nl=$maxi-1
        let ol=$maxj-1
-    
+ 
+
        if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
             for a in {$i..$nl}; do
-                dirsToKill+=("${runningList[a]}")
-                pidsToKill+=("${runningPids[a]}")
+                pidsToKill+=("${runningPids[$a]}")
             done
        fi
        
        if  [[ $i -eq $maxi && $j -lt $maxj ]] ;then
             for b in {$j..$ol}; do
-                dirsToRun+=("${directories_to_check[b]}")
+                dirsToRun+=("${directories_to_check[$b]}")
             done
        fi
      else 
         
-#       echo "El File $daemonSonPids no existe. Se corren todos entonces"  
         dirsToRun=("${directories_to_check[@]}")
 
      fi
 
-                                  
-    #Obtengo la lista de directorios
-    #qttyDirectories=${#directories_to_check[@]}
-    
-
-   # for directory in ${dirsToKill[@]}; do
+                                
 
 
 echo "Hay ${#pidsToKill[@]} pids to Kill"
@@ -171,7 +148,7 @@ echo "Hay ${#dirsToRun[@]} dirs to run "
    fi
 
 
-    if [[ "${#dirsToRun[@]}" > 0   ]];then
+    if [[ "${#dirsToRun[@]}" > 0  ]];then
 
          for directory in ${dirsToRun[@]}; do
             count=$(($count+1))
@@ -182,7 +159,7 @@ echo "Hay ${#dirsToRun[@]} dirs to run "
         done
     fi    
 
-    cat "$daemonSonPidsTmp" >> "$daemonSonPids"
+    cat "$daemonSonPidsTmp" | sort >> "$daemonSonPids"
     rm "$daemonSonPidsTmp"  
 
     #Waiter
