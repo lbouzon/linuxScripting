@@ -3,7 +3,7 @@
 
 while true ;do 
     #date >> filetime.txt
-	sleep 5 
+	sleep 50 
     echo $1
 #	set qFiles='wc -l < filetime.txt'
 #	if ((qFiles > 10)) ; then
