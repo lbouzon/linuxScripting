@@ -17,7 +17,7 @@ waitTime=5
 daemonSonScript="fakeDaemon.ksh"
 daemonOutFile="./bar/salid.out"
 
-alias deamonCmd='(nohup ksh $daemonSonScript $directory >$daemonOutFile.$count 2 >$daemonOutFile.$count )  & > /dev/null'
+alias deamonCmd='(nohup ksh $daemonSonScript $directory > $daemonOutFile.$count 2> $daemonOutFile.$count ) & > /dev/null'
 #alias killCmd='grep $directory $daemonSonPids | cut -d ' ' -f  2 | kill -15'
 
 
@@ -26,15 +26,15 @@ alias deamonCmd='(nohup ksh $daemonSonScript $directory >$daemonOutFile.$count 2
 
 
 if [ ! -d "./bar" ]; then
-    echo "Creating bar folder"
+#    echo "Creating bar folder"
     mkdir bar
 fi
 
 if [ -f "$daemonSonPids" ]; then
     logname="$( date +"%Y%m%d%s" )"
-    echo "Renaming pids File to $daemonSonPids.$logname"
+ #   echo "Renaming pids File to $daemonSonPids.$logname"
     mv $daemonSonPids ${daemonSonPids}.${logname}
-    echo 
+   
 fi
 
 #contador para crearfiles de salida del nohup
@@ -49,10 +49,10 @@ paseo=0
 
 while true
 do
-  echo "El paseo vale $paseo" 
+  #echo "Vuelta: $paseo" 
   # Inicio del Calculo de espera de  corrida
     sleep $waitTime
-    sleep 3 
+    sleep 1 
 
 
 
@@ -66,53 +66,64 @@ do
 
     directories_to_check=(`psql -q -A -t -c "select directory from directories where username='lbouzon'and enabled=true" -d shelltest001 -U shell | sort`)
 
-    echo "1)"
-    echo "Los directorios a verificar son ${directories_to_check[@]}"
+   # echo "1)"
+   # echo "Los directorios a verificar son ${directories_to_check[@]}"
 
               
 
     if [ -f "$daemonSonPids" ]; then
-        echo "El file $daemonSonPids existe y tiene esto:"
 
-        cat $daemonSonPids 
+
+#        echo "El file $daemonSonPids existe y tiene esto:"
+
+        cat "${daemonSonPids}" 
         
-        echo "-fin-"
+#        echo "-___________________fin____________________-"
             
         runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
         runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
 
-        rm $daemonSonPids
+        #rm $daemonSonPids
         i=0
         j=0
         maxi=${#directories_to_check[@]}   
-        maxj=${#runningLis[@]}   
-       
-        while [[ $j -lt $maxj  &&   $i -lt $maxi   ]]  ;do
+        maxj=${#runningList[@]}   
+      
+
+        #aca empieza el error
+
+        while [[ $j < $maxj  &&   $i < $maxi   ]]  ;do
+
+#        echo "el valor de to Check: ${directories_to_check[i]} and to run:  ${runningList[j]}"
+
+
             if [[ ${directories_to_check[i]} > ${runningList[j]} ]] ;then
             
-                dirsToKill+="${runningList[j]}"
-                pidsToKill+="${runningPids[j]}"
+                dirsToKill+=("${runningList[j]}")
+                pidsToKill+=("${runningPids[j]}")
             
-                echo "directorio to Kill ${dirsToKill[j]}"
-                echo "pid to Kill ${pidsToKill[j]}"
+#                echo "directorio to Kill ${dirsToKill[j]}"
+#                echo "pid to Kill ${pidsToKill[j]}"
             
                 let j++
             
             elif  [[  ${directories_to_check[i]} < ${runningList[j]} ]];then
                     
-                dirsToRun+="${directories_to_check[i]}"
-                echo "dirs to run ${dirsToRun[j]}"
+                dirsToRun+=("${directories_to_check[i]}")
+#               echo "dirs to run ${dirsToRun[j]}"
             
             elif   [[  ${directories_to_check[i]} = ${runningList[j]} ]];then
-                echo  "Esté ya está corriendo  ${directories_to_check[i]}"
-                
-                sed -n '${j}p' "$daemonSonPids" >> "$daemonSonPidsTmp"
-            
+#                echo  "Esté ya está corriendo  ${directories_to_check[i]}"
+              
                 let i++
                 let j++
+
+                sed -n "${j}p" "$daemonSonPids" >> "$daemonSonPidsTmp"
+            
             fi
             
        done
+    rm $daemonSonPids
 
   #else 
      #echo "El File $daemonSonPids no existe. Se corren todos entonces"  
@@ -124,19 +135,19 @@ do
     
        if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
             for a in {$i..$nl}; do
-                dirsToKill+=("${runningList[j]}")
+                dirsToKill+=("${runningList[a]}")
                 pidsToKill+=("${runningPids[a]}")
             done
        fi
        
        if  [[ $i -eq $maxi && $j -lt $maxj ]] ;then
             for b in {$j..$ol}; do
-                dirsToRun+=("${directories_to_check[i]}")
+                dirsToRun+=("${directories_to_check[b]}")
             done
        fi
      else 
         
-        echo "El File $daemonSonPids no existe. Se corren todos entonces"  
+#       echo "El File $daemonSonPids no existe. Se corren todos entonces"  
         dirsToRun=("${directories_to_check[@]}")
 
      fi
@@ -148,25 +159,27 @@ do
 
    # for directory in ${dirsToKill[@]}; do
 
-   if  [[  ${#pidsToKill[@]} > 0  ]]
-     for pid in ${pidsToKill[@]}; do
+
+echo "Hay ${#pidsToKill[@]} pids to Kill"
+echo "Hay ${#dirsToRun[@]} dirs to run "
+
+   if  [[  "${#pidsToKill[@]}" > 0  ]];then
+        for pid in ${pidsToKill[@]}; do
         #killCmd
-        kill -15 $pid 
-    done
+            kill -15 $pid 
+        done
+   fi
 
-    if [[ ${#dirstToRun[@]} > 0   ]] 
-    for directory in ${dirsToRun[@]}; do
-        echo "El directorio es $directory"
-   #     echo "el deamonHijo es $daemonSonScript"
-   #     echo "el valor de i es $count"
-        echo "el valor de file es $daemonOutFile.$count"
-        count=$(($count+1))
 
-        deamonCmd
+    if [[ "${#dirsToRun[@]}" > 0   ]];then
+
+         for directory in ${dirsToRun[@]}; do
+            count=$(($count+1))
+
+            deamonCmd
         
-        echo "$directory" "$!" >> "$daemonSonPidsTmp"
-    done
-
+           echo "$directory" "$!" >> "$daemonSonPidsTmp"
+        done
     fi    
 
     cat "$daemonSonPidsTmp" >> "$daemonSonPids"
@@ -175,8 +188,9 @@ do
     #Waiter
     end=$SECONDS
     elapsed=$((end - start))
-    echo "el valor de Count es $count"
-    echo "let´s wait $waitTime"
+
+
+#    echo "let´s wait $waitTime"
 
 
     if [[ "$elapsed" = 0 ]]; then
