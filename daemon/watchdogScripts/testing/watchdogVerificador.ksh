@@ -70,9 +70,6 @@ while true; do
 
     elapsed=$(($end - $start))
 
-
-	echo "Elapsed time: $elapsed"
-
     if [[ "$elapsed" = 0 ]]; then
             elapsed=1
     fi
