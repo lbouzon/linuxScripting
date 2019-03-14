@@ -12,13 +12,12 @@
 daemonSonPids="./bar/daemonSon.pids"
 daemonSonPidsTmp="./bar/daemonSon.pids.tmp"
 
-porcentageOfTime=0.05
+porcentageOfTime=0.5
 waitTime=5
 daemonSonScript="fakeDaemon.ksh"
 daemonOutFile="./bar/salid.out"
 
 alias deamonCmd='(nohup ksh $daemonSonScript $directory > $daemonOutFile.$count 2> $daemonOutFile.$count ) & > /dev/null'
-
 
 #Delete Lista de Deamons al ser inicializado 
 
@@ -61,27 +60,46 @@ do
 
         cat "${daemonSonPids}" 
 
-        runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
-        runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
-
-        i=0
-        j=0
-        maxi=${#directories_to_check[@]}   
-        maxj=${#runningList[@]}   
-
         #________________________________________________________________________________________________
         #   Verificar si los pids corriendo tiene efectivamente el fakeDeamon corriendo con el direcotorio. 
         #               1. Si es asi, dejadlo en el file $daemonSonPids
         #               2. Si no es asi, borradlo del file. 
         # Si es borrado al comparar
-        for  lineNum in {1..$maxj} ; do
-            present=`ps aux | grep "${runningPids[$lineNum]}" | grep "$daemonSonScript" | grep "${runningList[$lineNum]}" | wc -l`
+        
+        preList=(`cut -d ' ' -f 1  $daemonSonPids`)
+        prePids=(`cut -d ' ' -f 2  $daemonSonPids`)
+
+        premaxj=${#preList[@]}   
+
+        for  lineNum in {0..$(($premaxj-1))} ; do
+            present=`ps aux | grep "${prePids[$lineNum]}" | grep "$daemonSonScript" | grep "${preList[$lineNum]}" | wc -l`
+            echo "Present vale:  $present ."
+            echo "El pid es ${prePids[$lineNum]} ,  el script  $daemonSonScript y el directorio es  ${preList[$lineNum]}"
+
+            # ps aux | grep "${runningPids[$lineNum]}" | grep "$daemonSonScript" | grep "${runningList[$lineNum]}" 
+            echo ""
+            sleep 1
 
             if [[ "$present" = 0  ]]; then
-                sed -i.bak."`date '+%Y-%m-%d.%H.%M.%S'`" '\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d' $daemonSonPids
+                #                sed -i.bak."`date '+%Y-%m-%d.%H.%M.%S'`" '\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d' $daemonSonPids
+                echo "borraremos ${preList[$lineNum]} ${prePids[$lineNum]}"
+                 sed -i "\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d" $daemonSonPids
+               # linesvalor=$(($lineNum+1))
+                #sed -i "${linesvalor}d" $daemonSonPids
+                echo "New file $daemonSonPids tiene:"
+                cat "$daemonSonPids"
+
             fi
         done
 
+        runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
+        runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
+
+        i=0
+        j=0
+
+        maxi=${#directories_to_check[@]}   
+        maxj=${#runningList[@]}   
 
         #________________________________________________________________________________________________
         # se fija si los directorios estan corriendo , y sino los agrega a un arra
@@ -116,7 +134,6 @@ do
         let nl=$maxi-1
         let ol=$maxj-1
 
-
         if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
             for a in {$i..$nl}; do
                 pidsToKill+=("${runningPids[$a]}")
@@ -137,7 +154,11 @@ do
     #________________________________________________________________________________________________
     # Corre y mata los deamons con sus directorios
     echo "Hay ${#pidsToKill[@]} pids to Kill"
+    echo "Los pids son: ${pidsToKill[@]}"
+
+
     echo "Hay ${#dirsToRun[@]} dirs to run "
+    echo "Los dirs son ${dirsToRun[@]}"
 
     if  [[  "${#pidsToKill[@]}" > 0  ]];then
         for pid in ${pidsToKill[@]}; do
