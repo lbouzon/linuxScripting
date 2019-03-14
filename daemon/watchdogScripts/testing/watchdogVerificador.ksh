@@ -11,16 +11,16 @@
 #Settings 
 
 porcentageOfTime=0.05
-watchdogPidFile="./var/watchdogVerificador.pid"
-pidfile="./var/daemons.pid"
-scriptName="fakeDaemon.ksh"
+watchdogPidFile="./bar/watchdogVerificador.pid"
+pidfile="./bar/daemons.pid"
+scriptName="daemonPadre.ksh"
 
 if [  -f  $pidfile ];then
     pidfValues=`(cat $pidfile)`
 fi 
 
-if [ ! -d var ]; then
-    mkdir var 
+if [ ! -d bar ]; then
+    mkdir bar 
 fi 
 
 echo $$ > $watchdogPidFile
@@ -29,7 +29,7 @@ waitTime=1
 #echo $((($(date +%s%N) - 1552072477431414701 )/1000000))
 :
 
-alias fakeDaemonCmd='(nohup ksh $scriptName  >./var/fake.salida 2>./var/fake.salida) & > /dev/null'
+alias fakeDaemonCmd='(nohup ksh $scriptName  >./bar/fake.salida 2>./bar/fake.salida) & > /dev/null'
 
 while true; do
     echo "Vamos a esperar $waitTime segundo(s)"
@@ -37,45 +37,45 @@ while true; do
     start=$SECONDS
     echo "los Segundos son $start"
 
-  # deamonRunning=`ps aux | grep "fakeDaemon.ksh" | grep -v "grep" | wc -l`
-    deamonPidList=(`pgrep -f fakeDaemon.ksh`)
-    
-	echo "Hay ${#deamonPidList[@]} instancias de FakeDaemons running"
+    # deamonRunning=`ps aux | grep "fakeDaemon.ksh" | grep -v "grep" | wc -l`
+    deamonPidList=(`pgrep -f $scriptName`)
+
+    echo "Hay ${#deamonPidList[@]} instancias de FakeDaemons running"
 
 
-	if   [[ -z "${deamonPidList}" ]]; then
-	echo "Como no habia ninguno lo corro"
-	rm $pidfile
-    fakeDaemonCmd
-    echo $! >> $pidfile
-
-
-    elif [   ${#deamonPidList[@]} -lt 6 ]; then
-         echo "hay menos de 6" 
-    fakeDaemonCmd         
-    echo $! >> $pidfile
-
-   
-	elif [ ${#deamonPidList[@]} -gt 6 ]; then
-            echo "uh, hay banda"
- 	    for pid in $deamonPidList;do
-		kill -15 $pid
-            done
+    if   [[ -z "${deamonPidList}" ]]; then
+        echo "Como no habia ninguno lo corro"
+        rm $pidfile
         fakeDaemonCmd
         echo $! >> $pidfile
 
-	fi   
- 
+
+    elif [   ${#deamonPidList[@]} -lt 1 ]; then
+        echo "hay menos de 1" 
+        fakeDaemonCmd         
+        echo $! >> $pidfile
+
+
+    elif [ ${#deamonPidList[@]} -gt 1 ]; then
+        echo "uh, hay mas de uno"
+        for pid in $deamonPidList;do
+            kill -15 $pid
+        done
+        fakeDaemonCmd
+        echo $! >> $pidfile
+
+    fi   
+
     end=$SECONDS
 
     elapsed=$(($end - $start))
 
     if [[ "$elapsed" = 0 ]]; then
-            elapsed=1
+        elapsed=1
     fi
 
     let waitTime=$(($elapsed/$porcentageOfTime))
-#    waitTime=`echo "$elapsed/$porcentageofTime" | bc`
+    #    waitTime=`echo "$elapsed/$porcentageofTime" | bc`
 
     if [[ "$waitTime" < 1 ]]; then
         waitTime=1

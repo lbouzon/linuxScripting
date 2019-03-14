@@ -1,5 +1,5 @@
 #!/bin/ksh
-pidFile="./var/watchdog.pid"
+pidFile="./bar/watchdog.pid"
 name=`basename $0`
 
 if [ -f  $pidFile ];then
@@ -15,11 +15,11 @@ fi
 
 echo "Script was not running"
 
-if [ ! -d "./var" ]; then
-    mkdir var 
+if [ ! -d "./bar" ]; then
+    mkdir bar 
 fi
 
-(nohup sh $0 > ./var/salidaW.out 2>./var/salidaW.out) & > /dev/null
+(nohup sh $0 > ./bar/salidaW.out 2>./bar/salidaW.out) & > /dev/null
 echo $! > $pidFile
 
 
@@ -37,7 +37,7 @@ if [ "$pidValue" = "$$" ] ; then
 
 while true; do
     sleep 55
-    echo "lisa"  > ./var/output.txt
+    echo "lisa"  > ./bar/output.txt
     sleep 44
 done
 

@@ -1,7 +1,0 @@
-
- 12164
-/home/lbouzon/fakeDirs 12162
-/home/lbouzon/fakeDirs/documents 12014
-/home/lbouzon/fakeDirs/images 12015
-/home/lbouzon/fakeDirs/music 12016
-/home/lbouzon/fakeDirs/video 12017

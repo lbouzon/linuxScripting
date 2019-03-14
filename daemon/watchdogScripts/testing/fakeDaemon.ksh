@@ -3,10 +3,11 @@
 
 while true ;do 
     #date >> filetime.txt
-	sleep 50 
-    echo $1
-#	set qFiles='wc -l < filetime.txt'
-#	if ((qFiles > 10)) ; then
- #       tail -n +2 filetime.txt > filetimeTMP.txt  && mv filetimeTMP.txt  filetime.txt
-#	fi
+    sleep 60 
+    echo "$1 `date '+%Y-%m-%d.%H.%M.%S'`"
+
+    #	set qFiles='wc -l < filetime.txt'
+    #	if ((qFiles > 10)) ; then
+    #       tail -n +2 filetime.txt > filetimeTMP.txt  && mv filetimeTMP.txt  filetime.txt
+    #	fi
 done

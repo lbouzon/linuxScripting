@@ -11,7 +11,7 @@
 ###################################################
 #Settings 
 porcentageOfTime=0.5
-pidFile="./var/watchdogVerificador.pid"
+pidFile="./bar/watchdogVerificador.pid"
 scriptName="watchdogVerificador.ksh"
 
 if [  -f  $pidFile ]; then
@@ -20,16 +20,16 @@ if [  -f  $pidFile ]; then
 
     wdPresent=`ps -eo pid,cmd | grep $pidValue |grep $scriptName | wc -l`
 
-     echo "el valor de wdPresent es $wdPresent"
-if [[  "$wdPresent" = 1  ]]; then
+    echo "el valor de wdPresent es $wdPresent"
+    if [[  "$wdPresent" = 1  ]]; then
         echo "Script is already running"
         exit 0   
     fi
 else 
-    if [ ! -d "./var" ]; then
-        mkdir var
+    if [ ! -d "./bar" ]; then
+        mkdir bar
     fi
 fi
 
 echo "Script was not running. Initializing script"
-(nohup ksh $scriptName > ./var/watchdog.out 2>./var/watchdog.out) & > /dev/null
+(nohup ksh $scriptName > ./bar/watchdog.out 2>./bar/watchdog.out) & > /dev/null

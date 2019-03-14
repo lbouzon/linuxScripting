@@ -8,7 +8,7 @@
 #			  	2b. Los deamons se llaman directorycheck:
 # March 12, 2019
 ###################################################
- 
+
 daemonSonPids="./bar/daemonSon.pids"
 daemonSonPidsTmp="./bar/daemonSon.pids.tmp"
 
@@ -18,29 +18,23 @@ daemonSonScript="fakeDaemon.ksh"
 daemonOutFile="./bar/salid.out"
 
 alias deamonCmd='(nohup ksh $daemonSonScript $directory > $daemonOutFile.$count 2> $daemonOutFile.$count ) & > /dev/null'
-#alias killCmd='grep $directory $daemonSonPids | cut -d ' ' -f  2 | kill -15'
-
 
 
 #Delete Lista de Deamons al ser inicializado 
 
-
 if [ ! -d "./bar" ]; then
-#    echo "Creating bar folder"
     mkdir bar
 fi
 
 if [ -f "$daemonSonPids" ]; then
-    logname="$( date +"%Y%m%d%s" )"
- #   echo "Renaming pids File to $daemonSonPids.$logname"
-    mv $daemonSonPids ${daemonSonPids}.${logname}
-   
+    longame="$( date +"%Y%m%d%s" )"
+    mv $daemonSonPids ${daemonSonPids}.${longame}
+
 fi
+#________________________________________________________________________________________________
 
-#contador para crearfiles de salida del nohup
+#Contador para crearfiles de salida del nohup
 count=0
-paseo=0
-
 
 #####################################
 #                                   #
@@ -49,135 +43,134 @@ paseo=0
 
 while true
 do
-  #echo "Vuelta: $paseo" 
-  # Inicio del Calculo de espera de  corrida
+    # Calculo de espera de  corrida
     sleep $waitTime
     sleep 1 
 
-
-
     start=$SECONDS
-  #                                         #
-   
+
     set -A dirsToRun
     set -A dirsToLeave
     set -A pidsToKill
 
+    #________________________________________________________________________________________________
+    # Query para ver los directorios a verificar
     directories_to_check=(`psql -q -A -t -c "select directory from directories where username='lbouzon'and enabled=true" -d shelltest001 -U shell | sort`)
-
 
     if [ -f "$daemonSonPids" ]; then
 
-
-
         cat "${daemonSonPids}" 
-        
-            
+
         runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
         runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
 
-        #rm $daemonSonPids
         i=0
         j=0
         maxi=${#directories_to_check[@]}   
         maxj=${#runningList[@]}   
-      
+
+        #________________________________________________________________________________________________
+        #   Verificar si los pids corriendo tiene efectivamente el fakeDeamon corriendo con el direcotorio. 
+        #               1. Si es asi, dejadlo en el file $daemonSonPids
+        #               2. Si no es asi, borradlo del file. 
+        # Si es borrado al comparar
+        for  lineNum in {1..$maxj} ; do
+            present=`ps aux | grep "${runningPids[$lineNum]}" | grep "$daemonSonScript" | grep "${runningList[$lineNum]}" | wc -l`
+
+            if [[ "$present" = 0  ]]; then
+                sed -i.bak."`date '+%Y-%m-%d.%H.%M.%S'`" '\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d' $daemonSonPids
+            fi
+        done
 
 
+        #________________________________________________________________________________________________
+        # se fija si los directorios estan corriendo , y sino los agrega a un arra
+        # si los directorios estan corriendo pero no están en la lista de correr, los agrega al file de correr. 
         while [[ $j < $maxj  &&   $i < $maxi   ]]  ;do
 
-
-
             if [[ ${directories_to_check[$i]} > ${runningList[$j]} ]] ;then
-            
+
                 pidsToKill+=("${runningPids[$j]}")
-            
+
                 let j++
-            
+
             elif  [[  ${directories_to_check[$i]} < ${runningList[$j]} ]];then
-                    
+
                 dirsToRun+=("${directories_to_check[$i]}")
 
                 let i++
 
             elif   [[  ${directories_to_check[$i]} = ${runningList[$j]} ]];then
-              
+
                 let i++
                 let j++
 
                 sed -n "${j}p" "$daemonSonPids" >> "$daemonSonPidsTmp"
-                
+
             fi
-            
-       done
-    rm $daemonSonPids
+
+        done
+
+        rm $daemonSonPids
+
+        let nl=$maxi-1
+        let ol=$maxj-1
 
 
-       let nl=$maxi-1
-       let ol=$maxj-1
- 
-
-       if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
+        if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
             for a in {$i..$nl}; do
                 pidsToKill+=("${runningPids[$a]}")
             done
-       fi
-       
-       if  [[ $i -eq $maxi && $j -lt $maxj ]] ;then
+        fi
+
+        if  [[ $i -eq $maxi && $j -lt $maxj ]] ;then
             for b in {$j..$ol}; do
                 dirsToRun+=("${directories_to_check[$b]}")
             done
-       fi
-     else 
-        
+        fi
+    else 
+
         dirsToRun=("${directories_to_check[@]}")
 
-     fi
+    fi
 
-                                
+    #________________________________________________________________________________________________
+    # Corre y mata los deamons con sus directorios
+    echo "Hay ${#pidsToKill[@]} pids to Kill"
+    echo "Hay ${#dirsToRun[@]} dirs to run "
 
-
-echo "Hay ${#pidsToKill[@]} pids to Kill"
-echo "Hay ${#dirsToRun[@]} dirs to run "
-
-   if  [[  "${#pidsToKill[@]}" > 0  ]];then
+    if  [[  "${#pidsToKill[@]}" > 0  ]];then
         for pid in ${pidsToKill[@]}; do
-        #killCmd
+            #killCmd
             kill -15 $pid 
         done
-   fi
-
+    fi
 
     if [[ "${#dirsToRun[@]}" > 0  ]];then
 
-         for directory in ${dirsToRun[@]}; do
+        for directory in ${dirsToRun[@]}; do
             count=$(($count+1))
 
             deamonCmd
-        
-           echo "$directory" "$!" >> "$daemonSonPidsTmp"
+
+            echo "$directory" "$!" >> "$daemonSonPidsTmp"
         done
     fi    
 
     cat "$daemonSonPidsTmp" | sort >> "$daemonSonPids"
     rm "$daemonSonPidsTmp"  
 
-    #Waiter
+    # Calculo de tiempo de corrida
     end=$SECONDS
     elapsed=$((end - start))
-
-
-#    echo "let´s wait $waitTime"
-
 
     if [[ "$elapsed" = 0 ]]; then
         elapsed=1
     fi
     let waitTime=$(($elapsed/$porcentageOfTime))
-    
+
     if [[ "$waitTime" < 1 ]]; then
         waitTime=1
     fi
-    paseo=$(($paseo+1))
 
 done
