@@ -2,7 +2,6 @@
 ###################################################
 # Written By: Lisandro Bouzon Filename: daemonPadre.ksh
 # Purpose: Watchdog -    
-
 #                       1  deamon que inicializa los Deamonshijos de cada directorio
 #                       2  Genera la lista de deamons que verifica cada directorio
 #			  	2b. Los deamons se llaman directorycheck:
@@ -13,7 +12,7 @@ daemonSonPids="./bar/daemonSon.pids"
 daemonSonPidsTmp="./bar/daemonSon.pids.tmp"
 
 porcentageOfTime=0.5
-waitTime=5
+waitTime=1
 daemonSonScript="fakeDaemon.ksh"
 daemonOutFile="./bar/salid.out"
 
@@ -25,11 +24,11 @@ if [ ! -d "./bar" ]; then
     mkdir bar
 fi
 
-if [ -f "$daemonSonPids" ]; then
-    longame="$( date +"%Y%m%d%s" )"
-    mv $daemonSonPids ${daemonSonPids}.${longame}
-
-fi
+#*___Quitar el comentario si quieres que se borre el fil de pids._______________________________________
+#*  if [ -f "$daemonSonPids" ]; then
+#*    longame="$( date +"%Y%m%d%s" )"
+#*    mv $daemonSonPids ${daemonSonPids}.${longame}
+#*  fi
 #________________________________________________________________________________________________
 
 #Contador para crearfiles de salida del nohup
@@ -65,36 +64,32 @@ do
         #               1. Si es asi, dejadlo en el file $daemonSonPids
         #               2. Si no es asi, borradlo del file. 
         # Si es borrado al comparar
-        
+
         preList=(`cut -d ' ' -f 1  $daemonSonPids`)
         prePids=(`cut -d ' ' -f 2  $daemonSonPids`)
 
         premaxj=${#preList[@]}   
-
+        set -A indice
         for  lineNum in {0..$(($premaxj-1))} ; do
             present=`ps aux | grep "${prePids[$lineNum]}" | grep "$daemonSonScript" | grep "${preList[$lineNum]}" | wc -l`
-            echo "Present vale:  $present ."
-            echo "El pid es ${prePids[$lineNum]} ,  el script  $daemonSonScript y el directorio es  ${preList[$lineNum]}"
 
             # ps aux | grep "${runningPids[$lineNum]}" | grep "$daemonSonScript" | grep "${runningList[$lineNum]}" 
-            echo ""
-            sleep 1
 
             if [[ "$present" = 0  ]]; then
-                #                sed -i.bak."`date '+%Y-%m-%d.%H.%M.%S'`" '\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d' $daemonSonPids
-                echo "borraremos ${preList[$lineNum]} ${prePids[$lineNum]}"
-                 sed -i "\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d" $daemonSonPids
-               # linesvalor=$(($lineNum+1))
-                #sed -i "${linesvalor}d" $daemonSonPids
-                echo "New file $daemonSonPids tiene:"
-                cat "$daemonSonPids"
-
+                # sed -i.bak."`date '+%Y-%m-%d.%H.%M.%S'`" '\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d' $daemonSonPids
+                indice+=(`echo $(($lineNum+1))`)
+                # sed -i "\=${runningList[$lineNum]} ${runningPids[$lineNum]}=d" $daemonSonPids
             fi
         done
 
+        indice=(`echo ${indice[@]} | rev`)
+        for numero in ${indice[@]};
+        do
+            sed -i.bak "${numero}d" $daemonSonPids
+        done
+    
         runningList=(`cut -d ' ' -f 1  $daemonSonPids`)
         runningPids=(`cut -d ' ' -f 2  $daemonSonPids`)
-
         i=0
         j=0
 
@@ -104,6 +99,7 @@ do
         #________________________________________________________________________________________________
         # se fija si los directorios estan corriendo , y sino los agrega a un arra
         # si los directorios estan corriendo pero no están en la lista de correr, los agrega al file de correr. 
+
         while [[ $j < $maxj  &&   $i < $maxi   ]]  ;do
 
             if [[ ${directories_to_check[$i]} > ${runningList[$j]} ]] ;then
@@ -136,13 +132,13 @@ do
 
         if  [[ $j -eq $maxj && $i -lt $maxi ]] ; then
             for a in {$i..$nl}; do
-                pidsToKill+=("${runningPids[$a]}")
+               dirsToRun+=("${directories_to_check[$a]}")
             done
         fi
 
         if  [[ $i -eq $maxi && $j -lt $maxj ]] ;then
             for b in {$j..$ol}; do
-                dirsToRun+=("${directories_to_check[$b]}")
+                pidsToKill+=("${runningPids[$b]}")
             done
         fi
     else 
@@ -153,16 +149,9 @@ do
 
     #________________________________________________________________________________________________
     # Corre y mata los deamons con sus directorios
-    echo "Hay ${#pidsToKill[@]} pids to Kill"
-    echo "Los pids son: ${pidsToKill[@]}"
-
-
-    echo "Hay ${#dirsToRun[@]} dirs to run "
-    echo "Los dirs son ${dirsToRun[@]}"
 
     if  [[  "${#pidsToKill[@]}" > 0  ]];then
         for pid in ${pidsToKill[@]}; do
-            #killCmd
             kill -15 $pid 
         done
     fi
