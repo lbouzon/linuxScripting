@@ -21,7 +21,7 @@ if [ ${#} -eq 0 ]; then
 fi
 
 if [ -d $1 ] && [  -f $2 ];then
-   # echo "Procesing $1 $2"
+  echo "Procesing $1 $2"
 else
     echo "ChangeConstroler.ksh: Wrong argument type"
     exit 1

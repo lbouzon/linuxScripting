@@ -2,7 +2,7 @@
 ###################################################
 # Written By: Lisandro Bouzon Filename: fileFinder.ksh
 # Purpose: File getter -    
-#                       1  le paso el directorio y me devuelve el file que tiene 
+#                       1  le paso el directorio y me devuelve el file que tiene guardado 
 # March 18, 2019
 ###################################################
 dir="$1"
@@ -15,7 +15,6 @@ fileList="./bar/listOfFiles.txt"
 
 if [ !  -f  $fileList ];then
     touch $fileList
-    ls -l $dir | tail -n +2 > $fileList
 fi
 
 lineWithDir=`grep "$dir " $fileList`

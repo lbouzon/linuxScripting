@@ -1,8 +1,9 @@
 #!/bin/ksh
 ###################################################
-# Written By: Lisandro Bouzon Filename: fileFinder.ksh
+# Written By: Lisandro Bouzon Filename: fakeDaemon.ksh
 # Purpose: daemon -    
-#                       1  deemon que verifica cada cierto tiempo los cambios de un directorio
+#                       1.  Daemon que verifica cada cierto tiempo los cambios de un directorio
+#                       2.  Usa fileFinder.ksh y ChangeControler.ksh 
 # March 18, 2019
 ###################################################
 waitTime=0

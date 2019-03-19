@@ -1,0 +1,5 @@
+test
+/home/lbouzon/fakeDirs/documents cf81a7921624d3cd3567
+/home/lbouzon/fakeDirs/images b33579397d71905e5b40
+/home/lbouzon/fakeDirs/music 9c09f1fc146f2502b482
+/home/lbouzon/fakeDirs/video e054781f47da8752e3dd
