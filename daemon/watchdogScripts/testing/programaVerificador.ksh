@@ -7,7 +7,7 @@
 #                     1  Verifica que el watchdogVerificador.ksh
 #                               Si no está corriendo, lo inicia. 
 #                               Se fija si el pid del watchdogVerificador es el mismo que en el file , si no lo es , corre. 
-# Mar 12, 2019
+# Mar 19, 2019
 ###################################################
 #Settings 
 porcentageOfTime=0.5
@@ -20,7 +20,6 @@ if [  -f  $pidFile ]; then
 
     wdPresent=`ps -eo pid,cmd | grep $pidValue |grep $scriptName | wc -l`
 
-    echo "el valor de wdPresent es $wdPresent"
     if [[  "$wdPresent" = 1  ]]; then
         echo "Script is already running"
         exit 0   

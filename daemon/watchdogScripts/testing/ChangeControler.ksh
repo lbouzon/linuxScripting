@@ -14,75 +14,89 @@
 ###############################################
 
 
-if [${#} -eq 0 ]; then
-    #   echo "Change controler tiene 2 argumentos: directorio a chequear y file del stado anterior "
-    #  echo "uso : ./ChangeControler directorio file"
-
+#________  Argument Validaton  ________#
+if [ ${#} -eq 0 ]; then
+    echo "ChangeConstroler.ksh : missing arguments"  #  echo "uso : ./ChangeControler directorio file"
     exit: 0
 fi
 
 if [ -d $1 ] && [  -f $2 ];then
-    echo "Procesing $1 $2"
+   # echo "Procesing $1 $2"
 else
-    echo "Invalid arguments. ${1} is not a directory or ${2} is not a file "
+    echo "ChangeConstroler.ksh: Wrong argument type"
     exit 1
 fi
-exit 0
+
+#__________   Variables  ___________________ #
+typeset -a result
 
 directorio=$1
+file=$2
 
 i=0
 j=0
 
-oldList=($(cat old.list | tr -s ' ' | cut -f 9 -d ' ' ))
+oldList=($(cat $file  | tr -s ' ' | cut -f 9 -d ' ' ))
 newList=($(ls -l $directorio | tail -n +2 | tr -s ' ' | cut -f 9 -d ' ' ))
 
 oldLength=`echo ${#oldList[@]}`
 newLength=`echo ${#newList[@]}`
 
 IFS=$'\n'
-newFile=(`ls -l -I old.list | tail -n +2`)
+newFile=(`ls -l  "$1" | tail -n +2`)
 
 oldFile=()
+
+
 while IFS= read -r line || [[ "$line" ]] ; do
     oldFile+=("$line")
-done < old.list
+done < $file
 oldFile=("${oldFile[@]:1}")
+
+#___________________________________________________________________________
 
 while [[ $j -lt $oldLength  &&   $i -lt $newLength    ]]  ;do 
 
     if [[  ${newList[i]} > ${oldList[j]} ]] ;then
 
-        echo "Borrado file: ${oldList[j]}" 
+        result+=(`echo "Borrado file: ${oldList[j]}"`)
         let j++
 
     elif  [[  ${newList[i]} < ${oldList[j]} ]];then
-        echo "Agregado file: ${newList[i]}" 
+        result+=(`echo "Agregado file: ${newList[i]}"`) 
         let i++
 
     else
         if [[ "${newFile[i]}" != "${oldFile[j]}" ]] ; then
-            echo "File updated: ${newFile[i]}"
+          result+=(`echo "File updated: ${newFile[i]}"`)
         fi		
         let j++
         let i++
     fi
 
-done < old.list
-
+done < $2
 
 let nl=$newLength-1
 let ol=$oldLength-1
 
 if  [[ $j -eq $oldLength && $i -lt $newLength ]] ; then
     for a in {$i..$nl}; do 
-        echo "New File: ${newList[$a]}"
+        result+=(`echo "New File: ${newList[$a]}"`)
     done
 
 fi
 
 if  [[ $i -eq $newLength && $j -lt $oldLength ]] ;then 
     for b in {$j..$ol}; do 
-        echo "File Deleted: ${newList[$b]}"
+         result+=(`echo "File Deleted: ${newList[$b]}"`)
     done
 fi
+
+
+# Update SQL with changes
+for line in ${result[@]};  do 
+    psql -c "INSERT INTO changes(change_id, directory, check_at, description, username) VALUES (DEFAULT, '$1', now(), '$line', 'lbouzon')" -d shelltest001 -U shell
+done
+
+# Update status file with current directory status.
+printf "%s\n" "${newFile[@]}" > "$file"

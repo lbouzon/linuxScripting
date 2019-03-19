@@ -1,17 +1,17 @@
 #!/bin/ksh
 ###################################################
 # Written By: Lisandro Bouzon Filename: daemonPadre.ksh
-# Purpose: Watchdog -    
-#                       1  deamon que inicializa los Deamonshijos de cada directorio
-#                       2  Genera la lista de deamons que verifica cada directorio
-#			  	2b. Los deamons se llaman directorycheck:
-# March 12, 2019
+# Purpose: daemon  -    
+#                       1  Deamon que inicializa un deamon por cada directorio a controlar. 
+#                       2  Los revive si alguno llega a carse. 
+#           			  	2b. Los deamons se llaman fakeDaemon.ksh:
+# March 19, 2019
 ###################################################
 
 daemonSonPids="./bar/daemonSon.pids"
 daemonSonPidsTmp="./bar/daemonSon.pids.tmp"
 
-porcentageOfTime=0.5
+porcentageOfTime=0.05
 waitTime=1
 daemonSonScript="fakeDaemon.ksh"
 daemonOutFile="./bar/salid.out"

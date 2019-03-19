@@ -1,13 +1,33 @@
 #!/bin/ksh
-#Deamon que graba en un file el tiempo cada minuto. 
+###################################################
+# Written By: Lisandro Bouzon Filename: fileFinder.ksh
+# Purpose: daemon -    
+#                       1  deemon que verifica cada cierto tiempo los cambios de un directorio
+# March 18, 2019
+###################################################
+waitTime=0
+porcentageOfTime=0.05
+while true
+do
+ # Calculo de espera de  corrida
+    sleep $waitTime
+    sleep 1 
+    start=$SECONDS
+    
+    file=`./fileFinder.ksh $1`
+    ./ChangeControler.ksh $1 $file
+    
+# Calculo de tiempo de corrida
+    end=$SECONDS
+    elapsed=$((end - start))
 
-while true ;do 
-    #date >> filetime.txt
-    sleep 60 
-    echo "$1 `date '+%Y-%m-%d.%H.%M.%S'`"
+    if [[ "$elapsed" = 0 ]]; then
+        elapsed=1
+    fi
+    let waitTime=$(($elapsed/$porcentageOfTime))
 
-    #	set qFiles='wc -l < filetime.txt'
-    #	if ((qFiles > 10)) ; then
-    #       tail -n +2 filetime.txt > filetimeTMP.txt  && mv filetimeTMP.txt  filetime.txt
-    #	fi
+    if [[ "$waitTime" < 1 ]]; then
+        waitTime=1
+    fi
+
 done

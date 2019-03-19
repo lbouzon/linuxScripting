@@ -3,10 +3,10 @@
 # Written By: Lisandro Bouzon
 # Purpose: Watchdog -   filename: watchdogVerificador.ksh  
 # Lo inicializa el programaVerificador.ksh como un watchdog y 
-#                     1  Si no está corriendo, se inicializa como un watchdog. 
+#                     1  Si no está corriendo, se inicializa. 
 #                     2  Genera la lista de deamons 
-#				2b. Los deamons se llaman directorycheck:
-# Feb 19, 2019
+#				2b. Los deamons se llaman daemonPadre.ksh:
+# March 19, 2019
 ###################################################
 #Settings 
 
@@ -40,24 +40,24 @@ while true; do
     # deamonRunning=`ps aux | grep "fakeDaemon.ksh" | grep -v "grep" | wc -l`
     deamonPidList=(`pgrep -f $scriptName`)
 
-    echo "Hay ${#deamonPidList[@]} instancias de FakeDaemons running"
+   # echo "Hay ${#deamonPidList[@]} instancias de FakeDaemons running"
 
 
     if   [[ -z "${deamonPidList}" ]]; then
-        echo "Como no habia ninguno lo corro"
+#        echo "Como no habia ninguno lo corro"
         rm $pidfile
         fakeDaemonCmd
         echo $! >> $pidfile
 
 
     elif [   ${#deamonPidList[@]} -lt 1 ]; then
-        echo "hay menos de 1" 
+#        echo "hay menos de 1" 
         fakeDaemonCmd         
         echo $! >> $pidfile
 
 
     elif [ ${#deamonPidList[@]} -gt 1 ]; then
-        echo "uh, hay mas de uno"
+#        echo "uh, hay mas de uno"
         for pid in $deamonPidList;do
             kill -15 $pid
         done

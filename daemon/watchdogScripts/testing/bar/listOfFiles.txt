@@ -1,0 +1,9 @@
+drwxr-xr-x 2 lbouzon users 94 Mar  8 13:01 documents
+drwxr-xr-x 2 lbouzon users 74 Mar 19 09:48 images
+drwxr-xr-x 2 lbouzon users 87 Mar 19 10:59 music
+drwxr-xr-x 2 lbouzon users 55 Mar  8 12:43 video
+/home/lbouzon/fakeDirs/music 3078fc71c6c1fb206f4c
+/home/lbouzon/fakeDirs/images 3118da552886a2f0a980
+/home/lbouzon/fakeDirs/video ff610b647de965625a3f
+/home/lbouzon/fakeDirs/documents 976fa76f71608e13a7a0
+/home/lbouzon/fakeDirs 7a2701a34438741e2c6c
