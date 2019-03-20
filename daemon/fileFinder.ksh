@@ -30,13 +30,13 @@ echo "./bar/${name}"
 
 
 
+# Replace lines with logrotate
+# logList=(`ls ./bar/*.log`)
 
-logList=(`ls ./bar/*.log`)
-
-for file in ${logList[@]}; do
-    tail -F -n 100  "${file}" > "${file}.tmp" --retry 
-    mv -f "${file}.tmp" "${file}"
-done
+#for file in ${logList[@]}; do
+#    tail -F -n 100  "${file}" > "${file}.tmp" --retry 
+#    mv -f "${file}.tmp" "${file}"
+#done
 
 
 
