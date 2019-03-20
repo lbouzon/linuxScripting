@@ -26,18 +26,16 @@ fi
 echo $$ > $watchdogPidFile
 
 waitTime=1
-#echo $((($(date +%s%N) - 1552072477431414701 )/1000000))
-:
 
-alias fakeDaemonCmd='(nohup ksh $scriptName  >./bar/fake.salida 2>./bar/fake.salida) & > /dev/null'
+alias deamonCmd='(nohup ksh $scriptName  >./bar/daemonPadre.log 2>./bar/daemonPadre.log) & > /dev/null'
 
 while true; do
-    echo "Vamos a esperar $waitTime segundo(s)"
+#    echo "Vamos a esperar $waitTime segundo(s)"
     sleep $waitTime
     start=$SECONDS
-    echo "los Segundos son $start"
+#   echo "los Segundos son $start"
 
-    # deamonRunning=`ps aux | grep "fakeDaemon.ksh" | grep -v "grep" | wc -l`
+    # deamonRunning=`ps aux | grep "daemonChild.ksh" | grep -v "grep" | wc -l`
     deamonPidList=(`pgrep -f $scriptName`)
 
    # echo "Hay ${#deamonPidList[@]} instancias de FakeDaemons running"
@@ -46,13 +44,13 @@ while true; do
     if   [[ -z "${deamonPidList}" ]]; then
 #        echo "Como no habia ninguno lo corro"
         rm $pidfile
-        fakeDaemonCmd
+        deamonCmd
         echo $! >> $pidfile
 
 
     elif [   ${#deamonPidList[@]} -lt 1 ]; then
 #        echo "hay menos de 1" 
-        fakeDaemonCmd         
+        deamonCmd         
         echo $! >> $pidfile
 
 
@@ -61,7 +59,7 @@ while true; do
         for pid in $deamonPidList;do
             kill -15 $pid
         done
-        fakeDaemonCmd
+        deamonCmd
         echo $! >> $pidfile
 
     fi   

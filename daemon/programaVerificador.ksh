@@ -31,4 +31,4 @@ else
 fi
 
 echo "Script was not running. Initializing script"
-(nohup ksh $scriptName > ./bar/watchdog.out 2>./bar/watchdog.out) & > /dev/null
+(nohup ksh $scriptName > ./bar/watchdog.log 2>./bar/watchdog.log) & > /dev/null

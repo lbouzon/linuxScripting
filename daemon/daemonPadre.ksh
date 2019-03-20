@@ -4,7 +4,7 @@
 # Purpose: daemon  -    
 #                       1  Deamon que inicializa un deamon por cada directorio a controlar. 
 #                       2  Los revive si alguno llega a carse. 
-#           			  	2b. Los deamons se llaman fakeDaemon.ksh:
+#           			  	2b. Los deamons se llaman daemonChild.ksh:
 # March 19, 2019
 ###################################################
 
@@ -13,10 +13,10 @@ daemonSonPidsTmp="./bar/daemonSon.pids.tmp"
 
 porcentageOfTime=0.05
 waitTime=1
-daemonSonScript="fakeDaemon.ksh"
-daemonOutFile="./bar/salid.out"
+daemonSonScript="daemonChild.ksh"
+daemonOutFile="./bar/daemonPadre"
 
-alias deamonCmd='(nohup ksh $daemonSonScript $directory > $daemonOutFile.$count 2> $daemonOutFile.$count ) & > /dev/null'
+alias deamonCmd='(nohup ksh $daemonSonScript $directory > ${daemonOutFile}${count}.log 2> ${daemonOutFile}${count}.log ) & > /dev/null'
 
 #Delete Lista de Deamons al ser inicializado 
 
@@ -60,7 +60,7 @@ do
         cat "${daemonSonPids}" 
 
         #________________________________________________________________________________________________
-        #   Verificar si los pids corriendo tiene efectivamente el fakeDeamon corriendo con el direcotorio. 
+        #   Verificar si los pids corriendo tiene efectivamente el daemonChild.ksh corriendo con el direcotorio. 
         #               1. Si es asi, dejadlo en el file $daemonSonPids
         #               2. Si no es asi, borradlo del file. 
         # Si es borrado al comparar

@@ -1,0 +1,1 @@
+rm: cannot remove ‘./bar/daemons.pid’: No such file or directory

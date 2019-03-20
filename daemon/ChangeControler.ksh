@@ -20,11 +20,12 @@ if [ ${#} -eq 0 ]; then
     exit: 0
 fi
 
-if [ -d $1 ] && [  -f $2 ];then
-  echo "Procesing $1 $2"
-else
+if [ ! -d $1 ] && [ ! -f $2 ];then
     echo "ChangeConstroler.ksh: Wrong argument type"
     exit 1
+#    else
+ #   echo "Procesing $1 $2"
+ 
 fi
 
 #__________   Variables  ___________________ #
@@ -59,11 +60,11 @@ while [[ $j -lt $oldLength  &&   $i -lt $newLength    ]]  ;do
 
     if [[  ${newList[i]} > ${oldList[j]} ]] ;then
 
-        result+=(`echo "Borrado file: ${oldList[j]}"`)
+        result+=(`echo "File deleted: ${oldList[j]}"`)
         let j++
 
     elif  [[  ${newList[i]} < ${oldList[j]} ]];then
-        result+=(`echo "Agregado file: ${newList[i]}"`) 
+        result+=(`echo "New file: ${newList[i]}"`) 
         let i++
 
     else

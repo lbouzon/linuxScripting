@@ -1,0 +1,2 @@
+==> ./bar/daemonPadre1.log <==
+tail: cannot open ‘100’ for reading: No such file or directory
